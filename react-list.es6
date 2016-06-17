@@ -303,7 +303,7 @@ export default class extends Component {
     let space = cache[from] || 0;
     for (let i = from; i < index; ++i) {
       cache[i] = space;
-      const itemSize = this.getSizeOf(i);
+      const itemSize = this.getSizeOf(i, true);
       if (itemSize == null) break;
       space += itemSize;
     }
@@ -321,9 +321,9 @@ export default class extends Component {
     }
   }
 
-  getSizeOf(index) {
+  getSizeOf(index, allowEstimation) {
     const {cache, items} = this;
-    const {axis, itemSizeGetter, type} = this.props;
+    const {axis, itemSizeGetter, itemSizeEstimator, type} = this.props;
     const {from, itemSize, size} = this.state;
 
     // Try the static itemSize.
@@ -339,6 +339,11 @@ export default class extends Component {
     if (type === 'simple' && index >= from && index < from + size && items) {
       const itemEl = findDOMNode(items).children[index - from];
       if (itemEl) return itemEl[OFFSET_SIZE_KEYS[axis]];
+    }
+
+    // Try to get a size estimate.
+    if (allowEstimation && itemSizeEstimator) {
+      return itemSizeEstimator(index, cache);
     }
   }
 
